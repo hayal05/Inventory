@@ -10,12 +10,17 @@ function limiter({ windowMs, limit, message, skipSuccessfulRequests = false }) {
     windowMs,
     limit,
     skipSuccessfulRequests,
-    standardHeaders: 'draft-7',
+    standardHeaders: 'draft-7', // RateLimit and RateLimit-Policy headers
     legacyHeaders: false,
+    // Same JSON shape as every other error. express-rate-limit has already
+    // set the Retry-After header by the time this runs.
     handler: (_req, _res, next) => next(new AppError(429, 'RATE_LIMITED', message)),
   });
 }
 
+// Guessing passwords: 10 failed logins per 15 minutes per IP.
+// Successful logins are not counted, so a shared office IP is not locked out
+// by people who sign in correctly.
 export const loginLimiter = limiter({
   windowMs: 15 * 60 * 1000,
   limit: 10,
@@ -23,6 +28,7 @@ export const loginLimiter = limiter({
   message: 'Too many login attempts. Try again in a few minutes.',
 });
 
+// Creating accounts: 5 per hour per IP (each one also costs an argon2 hash).
 export const registerLimiter = limiter({
   windowMs: 60 * 60 * 1000,
   limit: 5,
