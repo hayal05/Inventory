@@ -1,0 +1,21 @@
+.kpi__label {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+.kpi__row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+.kpi__value {
+  margin: 0;
+  font-size: var(--text-xl);
+  font-weight: 700;
+}
+.kpi__note {
+  margin: var(--space-2) 0 0;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
