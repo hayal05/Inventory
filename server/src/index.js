@@ -11,6 +11,7 @@ import stockRouter from './routes/stock.js';
 import uploadsRouter from './routes/uploads.js';
 import { errorHandler, notFoundApi } from './middleware/errors.js';
 import { securityHeaders, corsMiddleware } from './middleware/security.js';
+import { ensureDatabaseReady, closeDatabase } from './db/bootstrap.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -55,6 +56,13 @@ if (process.env.NODE_ENV === 'production' && fs.existsSync(clientDist)) {
 // Must be registered after all routes.
 app.use(errorHandler);
 
-app.listen(PORT, () => {
-  console.log(`Server listening on port ${PORT}`);
-});
+// Initialize schema before accepting requests, including first-time registration.
+try {
+  await ensureDatabaseReady();
+  app.listen(PORT, () => {
+    console.log(`Server listening on port ${PORT}`);
+  });
+} catch {
+  await closeDatabase();
+  process.exitCode = 1;
+}
