@@ -1,0 +1,31 @@
+# Render Blueprint: one free web service serving both the API and the built React app.
+# Values marked `sync: false` are typed into the Render dashboard (never stored in git).
+services:
+  - type: web
+    name: inventory
+    runtime: node
+    plan: free
+    # Region is fixed when the service is created. Pick the one closest to your
+    # users and to your Neon project (a Frankfurt Neon project pairs with frankfurt).
+    region: frankfurt
+    buildCommand: npm run build
+    startCommand: npm start
+    healthCheckPath: /health # never touches the database, so Neon can sleep
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_ENV
+        value: production
+      # Neon POOLED connection string (host contains -pooler, ends with ?sslmode=require)
+      - key: DATABASE_URL
+        sync: false
+      # Render generates a long random value once; the server refuses weak ones in production.
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
