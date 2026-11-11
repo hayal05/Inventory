@@ -8,9 +8,15 @@ import './ExpiringPanel.css';
 
 const qtyFmt = new Intl.NumberFormat('en');
 
+// items: rows from GET /api/reports/expiring (soonest first); null while loading.
+// total: how many batches match in all, so the footer can say "View all".
 export default function ExpiringPanel({ items, total, days = 30 }) {
   return (
-    <Card title="Expiring soon" subtitle={`Batches expiring within ${days} days, or already expired`} className="expiring">
+    <Card
+      title="Expiring soon"
+      subtitle={`Batches expiring within ${days} days, or already expired`}
+      className="expiring"
+    >
       {!items ? (
         <div className="expiring__skeletons">
           <Skeleton height="2.4rem" />
@@ -36,7 +42,11 @@ export default function ExpiringPanel({ items, total, days = 30 }) {
           ))}
         </ul>
       )}
-      {items && total > items.length && <Link className="expiring__more" to="/expiry">View all {total}</Link>}
+      {items && total > items.length && (
+        <Link className="expiring__more" to="/expiry">
+          View all {total}
+        </Link>
+      )}
     </Card>
   );
 }

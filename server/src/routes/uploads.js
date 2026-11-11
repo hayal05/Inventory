@@ -7,6 +7,9 @@ import { buildUploadSignature } from '../lib/cloudinary.js';
 
 const router = Router();
 
+// GET /api/uploads/sign (staff and owner)
+// Returns what the browser needs to upload one product image directly to Cloudinary.
+// Cloudinary rejects signatures older than about an hour, so request a fresh one per upload.
 router.get(
   '/sign',
   requireAuth,

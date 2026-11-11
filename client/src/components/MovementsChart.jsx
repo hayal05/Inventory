@@ -4,9 +4,13 @@ import EmptyState from './EmptyState.jsx';
 import Skeleton from './Skeleton.jsx';
 import './MovementsChart.css';
 
+// Mirrors --accent-magenta, --border and --text-muted from theme.css (SVG attributes do not
+// reliably take CSS variables).
 const MAGENTA = '#d63cff';
 const GRID = '#1b2a5a';
 const MUTED = '#9aa6c7';
+
+// 'YYYY-MM-DD' -> '9' (day of month) for the axis, '9 Nov' for the tooltip.
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 export const dayShort = (d) => String(Number(d.slice(8, 10)));
 export const dayLong = (d) => `${Number(d.slice(8, 10))} ${MONTHS[Number(d.slice(5, 7)) - 1]}`;
@@ -17,16 +21,21 @@ function ChartTooltip({ active, payload }) {
   return (
     <div className="mvchart__tooltip">
       <p className="mvchart__tooltip-title">{dayLong(date)}</p>
-      <p>{movements} movement{movements === 1 ? '' : 's'}</p>
+      <p>
+        {movements} movement{movements === 1 ? '' : 's'}
+      </p>
     </div>
   );
 }
 
+// items: [{ date: 'YYYY-MM-DD', movements }] from GET /api/dashboard/daily; null while loading.
 export default function MovementsChart({ items }) {
   const empty = items && items.every((i) => i.movements === 0);
   return (
     <Card title="Movements per day" subtitle="Last 14 days" className="mvchart">
-      {!items ? <Skeleton height="200px" /> : empty ? (
+      {!items ? (
+        <Skeleton height="200px" />
+      ) : empty ? (
         <div className="mvchart__placeholder">
           <EmptyState compact icon="chart" title="No stock movements yet" />
         </div>
