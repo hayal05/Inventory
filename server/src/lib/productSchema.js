@@ -1,11 +1,14 @@
 // Shared product validation, used by the product routes and the CSV import.
 import { z } from 'zod';
 
+// Postgres numeric(12,2): up to 10 digits before the point, 2 after. Accepts a number or a
+// numeric string, and always hands the DB a string so no float math is involved.
 const price = z.preprocess(
   (v) => (typeof v === 'number' ? String(v) : typeof v === 'string' ? v.trim() : v),
   z.string().regex(/^\d{1,10}(\.\d{1,2})?$/, 'Must be a non-negative amount with up to 2 decimals')
 );
 
+// Empty strings from forms become null instead of being stored as ''.
 const optionalText = (max) =>
   z.preprocess(
     (v) => (typeof v === 'string' && v.trim() === '' ? null : v),
@@ -27,6 +30,7 @@ export const createBody = z.object({
     .max(2_000_000_000, 'Too large')
     .default(0),
   trackBatches: z.boolean({ invalid_type_error: 'Must be true or false' }).default(false),
+  // Checked against the org's Cloudinary folder in the handler (see assertOrgImage).
   imageUrl: optionalText(500),
   imagePublicId: optionalText(200),
 });

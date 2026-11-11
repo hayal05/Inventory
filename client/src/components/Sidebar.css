@@ -1,28 +1,175 @@
-.sidebar { width: 240px; height: 100%; display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-5) var(--space-4); background: var(--surface); border-right: 1px solid var(--border); }
-.sidebar__brand { display: flex; align-items: center; gap: var(--space-3); font-size: var(--text-lg); font-weight: 700; }
-.sidebar__logo { width: 28px; height: 28px; border-radius: var(--radius-sm); background: linear-gradient(135deg, var(--accent-cyan), var(--accent-magenta)); }
-.sidebar__search { width: 100%; padding: 9px var(--space-3); border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg); color: var(--text); font: inherit; }
-.sidebar__search::placeholder { color: var(--text-muted); }
-.sidebar__nav { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: var(--space-4); }
-.sidebar__group-label { margin: 0 0 var(--space-2) var(--space-3); font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); }
-.sidebar__link { display: block; padding: 9px var(--space-3); border-radius: var(--radius-sm); color: var(--text-muted); text-decoration: none; font-weight: 500; }
-.sidebar__link:hover { background: var(--surface-2); color: var(--text); }
-.sidebar__link.is-active { background: var(--surface-2); color: var(--text); box-shadow: inset 3px 0 0 var(--accent-cyan); }
-.sidebar__account { display: flex; align-items: center; gap: var(--space-3); padding-top: var(--space-4); border-top: 1px solid var(--border); }
-.sidebar__avatar { flex: none; width: 32px; height: 32px; display: grid; place-items: center; border-radius: var(--radius-pill); background: var(--accent-magenta); font-weight: 700; }
-.sidebar__account-text { min-width: 0; }
-.sidebar__email, .sidebar__role { margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.sidebar__email { font-size: var(--text-sm); }
-.sidebar__role { font-size: 0.75rem; color: var(--text-muted); text-transform: capitalize; }
-.sidebar__logout { margin-left: auto; white-space: nowrap; padding: 4px var(--space-2); border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--text-muted); font: inherit; font-size: var(--text-sm); cursor: pointer; }
-.sidebar__logout:hover { color: var(--text); background: var(--surface-2); }
-.sidebar__logout-mobile { display: none; }
+.sidebar {
+  width: 240px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-5) var(--space-4);
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+}
+.sidebar__brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--text-lg);
+  font-weight: 700;
+}
+.sidebar__logo {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-magenta));
+}
+.sidebar__search {
+  width: 100%;
+  padding: 9px var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+}
+.sidebar__search::placeholder {
+  color: var(--text-muted);
+}
+.sidebar__nav {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+.sidebar__group-label {
+  margin: 0 0 var(--space-2) var(--space-3);
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+.sidebar__link {
+  display: block;
+  padding: 9px var(--space-3);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  text-decoration: none;
+  font-weight: 500;
+}
+.sidebar__link:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+.sidebar__link.is-active {
+  background: var(--surface-2);
+  color: var(--text);
+  box-shadow: inset 3px 0 0 var(--accent-cyan);
+}
+.sidebar__account {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
+}
+.sidebar__avatar {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-pill);
+  background: var(--accent-magenta);
+  font-weight: 700;
+}
+.sidebar__account-text {
+  min-width: 0;
+}
+.sidebar__email,
+.sidebar__role {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sidebar__email {
+  font-size: var(--text-sm);
+}
+.sidebar__role {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: capitalize;
+}
+.sidebar__logout {
+  margin-left: auto;
+  white-space: nowrap;
+  padding: 4px var(--space-2);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+.sidebar__logout:hover {
+  color: var(--text);
+  background: var(--surface-2);
+}
+
+/* The mobile Log out item only exists in the bottom bar. */
+.sidebar__logout-mobile {
+  display: none;
+}
+
+/* Phones: the sidebar becomes a bottom bar. */
 @media (max-width: 768px) {
-  .sidebar { width: 100%; height: auto; flex-direction: row; gap: 0; padding: 0 env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px); border-right: 0; border-top: 1px solid var(--border); }
-  .sidebar__brand, .sidebar__search, .sidebar__group-label, .sidebar__account { display: none; }
-  .sidebar__nav { flex-direction: row; gap: 0; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; }
-  .sidebar__nav::-webkit-scrollbar { display: none; }
-  .sidebar__group { display: flex; flex: none; }
-  .sidebar__link, .sidebar__logout-mobile { display: block; flex: none; min-width: 76px; padding: var(--space-3) var(--space-3); border: 0; border-radius: 0; background: transparent; font: inherit; font-size: var(--text-sm); font-weight: 500; text-align: center; white-space: nowrap; cursor: pointer; }
-  .sidebar__link.is-active { background: transparent; box-shadow: inset 0 3px 0 var(--accent-cyan); }
+  .sidebar {
+    width: 100%;
+    height: auto;
+    flex-direction: row;
+    gap: 0;
+    padding: 0 env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+    border-right: 0;
+    border-top: 1px solid var(--border);
+  }
+  .sidebar__brand,
+  .sidebar__search,
+  .sidebar__group-label,
+  .sidebar__account {
+    display: none;
+  }
+  .sidebar__nav {
+    flex-direction: row;
+    gap: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+  }
+  .sidebar__nav::-webkit-scrollbar {
+    display: none;
+  }
+  .sidebar__group {
+    display: flex;
+    flex: none;
+  }
+  .sidebar__link,
+  .sidebar__logout-mobile {
+    display: block;
+    flex: none;
+    min-width: 76px;
+    padding: var(--space-3) var(--space-3);
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    font: inherit;
+    font-size: var(--text-sm);
+    font-weight: 500;
+    text-align: center;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+  .sidebar__link.is-active {
+    background: transparent;
+    box-shadow: inset 0 3px 0 var(--accent-cyan);
+  }
 }

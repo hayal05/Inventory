@@ -1,14 +1,57 @@
-.adj { display: flex; flex-direction: column; gap: var(--space-4); }
-.adj__row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
-.adj__field { display: flex; flex-direction: column; gap: var(--space-1); font-size: var(--text-sm); color: var(--text-muted); min-width: 0; }
-.adj__field input, .adj__field select {
-  padding: 10px var(--space-3); border: 1px solid var(--border); border-radius: var(--radius-sm);
-  background: var(--bg); color: var(--text); font: inherit; min-width: 0;
+.adj {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
 }
-.adj__field input:focus, .adj__field select:focus { border-color: var(--accent-cyan); }
-.adj__field [aria-invalid='true'] { border-color: var(--down-text); }
-.adj__error { font-style: normal; color: var(--down-text); }
-.adj__hint { margin: 0; font-size: 0.75rem; color: var(--text-muted); }
-.adj__alert { margin: 0; padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm);
-  background: var(--down-bg); color: var(--down-text); font-size: var(--text-sm); }
-@media (max-width: 480px) { .adj__row { grid-template-columns: 1fr; } }
+.adj__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+.adj__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  min-width: 0;
+}
+.adj__field input,
+.adj__field select {
+  padding: 10px var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  min-width: 0;
+}
+.adj__field input:focus,
+.adj__field select:focus {
+  border-color: var(--accent-cyan);
+}
+.adj__field [aria-invalid='true'] {
+  border-color: var(--down-text);
+}
+.adj__error {
+  font-style: normal;
+  color: var(--down-text);
+}
+.adj__hint {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+.adj__alert {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--down-bg);
+  color: var(--down-text);
+  font-size: var(--text-sm);
+}
+@media (max-width: 480px) {
+  .adj__row {
+    grid-template-columns: 1fr;
+  }
+}

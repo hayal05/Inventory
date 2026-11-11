@@ -1,9 +1,13 @@
+// Seed: 1 org, 1 owner, 1 location, 10 demo products.
+// Run with: npm run db:seed --prefix server
+// Safe to re-run: does nothing if the demo owner already exists.
 import { pathToFileURL } from 'node:url';
 import argon2 from 'argon2';
 import { eq } from 'drizzle-orm';
 import { orgs, users, locations, products } from './schema.js';
 
 export const DEMO_EMAIL = 'owner@demo.local';
+
 const DEMO_PRODUCTS = [
   { sku: 'PARA-500', name: 'Paracetamol 500mg (strip of 10)', category: 'Pain relief', baseUnit: 'strip', costPrice: '0.40', sellPrice: '0.75', reorderLevel: 50, trackBatches: true, barcode: '6001000000011' },
   { sku: 'IBU-400', name: 'Ibuprofen 400mg (strip of 10)', category: 'Pain relief', baseUnit: 'strip', costPrice: '0.55', sellPrice: '1.00', reorderLevel: 40, trackBatches: true, barcode: '6001000000028' },
@@ -16,18 +20,30 @@ const DEMO_PRODUCTS = [
   { sku: 'THERM-DIG', name: 'Digital thermometer', category: 'Devices', baseUnit: 'pcs', costPrice: '2.50', sellPrice: '4.50', reorderLevel: 10, trackBatches: false, barcode: '6001000000097' },
   { sku: 'MASK-50', name: 'Surgical face masks (box of 50)', category: 'Hygiene', baseUnit: 'box', costPrice: '1.60', sellPrice: '2.80', reorderLevel: 20, trackBatches: false, barcode: '6001000000103' },
 ];
+
+// Takes a drizzle db so it can be run against any Postgres.
 export async function runSeed(db, { password } = {}) {
   const existing = await db.select({ id: users.id }).from(users).where(eq(users.email, DEMO_EMAIL));
   if (existing.length > 0) return { seeded: false };
+
   const passwordHash = await argon2.hash(password);
+
   await db.transaction(async (tx) => {
     const [org] = await tx.insert(orgs).values({ name: 'Demo Pharmacy' }).returning();
-    await tx.insert(users).values({ orgId: org.id, email: DEMO_EMAIL, passwordHash, role: 'owner' });
+    await tx.insert(users).values({
+      orgId: org.id,
+      email: DEMO_EMAIL,
+      passwordHash,
+      role: 'owner',
+    });
     await tx.insert(locations).values({ orgId: org.id, name: 'Main store' });
     await tx.insert(products).values(DEMO_PRODUCTS.map((p) => ({ ...p, orgId: org.id })));
   });
+
   return { seeded: true };
 }
+
+// CLI entry point
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   const { db, pool } = await import('./client.js');
   const password = process.env.SEED_OWNER_PASSWORD || 'ChangeMe123!';
@@ -36,6 +52,10 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
     if (seeded) {
       console.log(`Seeded demo org. Login: ${DEMO_EMAIL} / ${process.env.SEED_OWNER_PASSWORD ? '(your SEED_OWNER_PASSWORD)' : password}`);
       if (!process.env.SEED_OWNER_PASSWORD) console.log('Change this password, or set SEED_OWNER_PASSWORD before seeding anything but local data.');
-    } else console.log(`Already seeded (${DEMO_EMAIL} exists). Nothing to do.`);
-  } finally { await pool.end(); }
+    } else {
+      console.log(`Already seeded (${DEMO_EMAIL} exists). Nothing to do.`);
+    }
+  } finally {
+    await pool.end();
+  }
 }

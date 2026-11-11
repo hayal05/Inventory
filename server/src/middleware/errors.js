@@ -53,7 +53,9 @@ export function errorHandler(err, _req, res, _next) {
     code = 'VALIDATION';
     message = 'Request body is not valid JSON';
   } else {
+    // Unknown error: log details server-side, never leak them to the client.
     console.error(err);
   }
+
   res.status(status).json({ error: { code, message, fields } });
 }

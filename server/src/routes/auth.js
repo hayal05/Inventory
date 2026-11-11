@@ -1,3 +1,4 @@
+// Auth routes. Mounted at /api/auth.
 import { Router } from 'express';
 import argon2 from 'argon2';
 import { z } from 'zod';
@@ -10,76 +11,135 @@ import { requireAuth } from '../middleware/auth.js';
 import { loginLimiter, registerLimiter } from '../middleware/rateLimit.js';
 
 const router = Router();
+
 const registerSchema = z.object({
   orgName: z.string().trim().min(1, 'Organization name is required').max(100, 'Too long (max 100)'),
   email: z.string().trim().toLowerCase().email('Enter a valid email').max(254, 'Too long'),
+  // Upper bound stops absurdly long inputs from tying up the hasher.
   password: z.string().min(8, 'At least 8 characters').max(128, 'Too long (max 128)'),
 });
+
 const loginSchema = z.object({
   email: z.string().trim().toLowerCase().email('Enter a valid email'),
   password: z.string().min(1, 'Password is required').max(128, 'Too long'),
 });
+
+// Verified when the email is unknown, so "no such user" and "wrong password"
+// take about the same time and can't be told apart by timing.
 let dummyHashPromise;
 const getDummyHash = () => (dummyHashPromise ??= argon2.hash('not-a-real-password'));
+
 const invalidLogin = () => new AppError(401, 'UNAUTHORIZED', 'Invalid email or password');
+
+// Drizzle wraps driver errors, so the Postgres code may be on err.cause.
 const isUniqueViolation = (err) => err?.code === '23505' || err?.cause?.code === '23505';
 
-router.post('/register', registerLimiter, asyncHandler(async (req, res) => {
-  const { orgName, email, password } = registerSchema.parse(req.body ?? {});
-  const passwordHash = await argon2.hash(password);
-  let result;
-  try {
-    result = await db.transaction(async (tx) => {
-      const [org] = await tx.insert(orgs).values({ name: orgName }).returning();
-      const [user] = await tx.insert(users)
-        .values({ orgId: org.id, email, passwordHash, role: 'owner' }).returning();
-      await tx.insert(locations).values({ orgId: org.id, name: 'Main store' });
-      return { org, user };
+// POST /api/auth/register: creates an org, its owner, and a default location.
+router.post(
+  '/register',
+  registerLimiter,
+  asyncHandler(async (req, res) => {
+    const { orgName, email, password } = registerSchema.parse(req.body ?? {});
+
+    // Hash before opening the transaction so we don't hold one of the
+    // 3 pooled connections while argon2 is working.
+    const passwordHash = await argon2.hash(password);
+
+    let result;
+    try {
+      result = await db.transaction(async (tx) => {
+        const [org] = await tx.insert(orgs).values({ name: orgName }).returning();
+        const [user] = await tx
+          .insert(users)
+          .values({ orgId: org.id, email, passwordHash, role: 'owner' })
+          .returning();
+        // Stock movements need a location, and the MVP has no "create location" screen.
+        await tx.insert(locations).values({ orgId: org.id, name: 'Main store' });
+        return { org, user };
+      });
+    } catch (err) {
+      if (isUniqueViolation(err)) {
+        throw new AppError(409, 'CONFLICT', 'An account with this email already exists', {
+          email: 'Already registered',
+        });
+      }
+      throw err;
+    }
+
+    const { org, user } = result;
+    res.status(201).json({
+      org: { id: org.id, name: org.name },
+      user: { id: user.id, email: user.email, role: user.role, orgId: user.orgId },
     });
-  } catch (err) {
-    if (isUniqueViolation(err))
-      throw new AppError(409, 'CONFLICT', 'An account with this email already exists', { email: 'Already registered' });
-    throw err;
-  }
-  const { org, user } = result;
-  res.status(201).json({
-    org: { id: org.id, name: org.name },
-    user: { id: user.id, email: user.email, role: user.role, orgId: user.orgId },
-  });
-}));
+  })
+);
 
-router.post('/login', loginLimiter, asyncHandler(async (req, res) => {
-  const { email, password } = loginSchema.parse(req.body ?? {});
-  const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
-  let ok = false;
-  try { ok = await argon2.verify(user ? user.passwordHash : await getDummyHash(), password); }
-  catch { ok = false; }
-  if (!user || !ok || !user.isActive) throw invalidLogin();
-  res.cookie(COOKIE_NAME, signToken(user), cookieOptions);
-  res.json({ user: { id: user.id, email: user.email, role: user.role, orgId: user.orgId } });
-}));
+// POST /api/auth/login: checks credentials and sets the session cookie.
+// Rate limited (10 failed attempts per 15 minutes per IP).
+router.post(
+  '/login',
+  loginLimiter,
+  asyncHandler(async (req, res) => {
+    const { email, password } = loginSchema.parse(req.body ?? {});
 
+    const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
+
+    let ok = false;
+    try {
+      ok = await argon2.verify(user ? user.passwordHash : await getDummyHash(), password);
+    } catch {
+      ok = false; // malformed stored hash: treat as a failed login
+    }
+    // Same message for unknown email, wrong password, and disabled account.
+    if (!user || !ok || !user.isActive) throw invalidLogin();
+
+    res.cookie(COOKIE_NAME, signToken(user), cookieOptions);
+    res.json({
+      user: { id: user.id, email: user.email, role: user.role, orgId: user.orgId },
+    });
+  })
+);
+
+// POST /api/auth/logout: clears the session cookie. Deliberately not behind
+// requireAuth, so someone with an expired session can still clear it.
 router.post('/logout', (_req, res) => {
+  // maxAge must be left out or Express would re-set a future expiry.
   const { maxAge, ...clearOptions } = cookieOptions;
   res.clearCookie(COOKIE_NAME, clearOptions);
   res.status(204).end();
 });
 
-router.get('/me', requireAuth, asyncHandler(async (req, res) => {
-  const [row] = await db.select({
-    id: users.id, email: users.email, role: users.role, isActive: users.isActive,
-    orgId: orgs.id, orgName: orgs.name,
-  }).from(users).innerJoin(orgs, eq(users.orgId, orgs.id))
-    .where(and(eq(users.id, req.user.id), eq(users.orgId, req.user.orgId))).limit(1);
-  if (!row || !row.isActive) {
-    const { maxAge, ...clearOptions } = cookieOptions;
-    res.clearCookie(COOKIE_NAME, clearOptions);
-    throw new AppError(401, 'UNAUTHORIZED', 'Account not found or disabled');
-  }
-  res.json({
-    user: { id: row.id, email: row.email, role: row.role, orgId: row.orgId },
-    org: { id: row.orgId, name: row.orgName },
-  });
-}));
+// GET /api/auth/me: the current user and org. Reads the DB (not just the token)
+// so a deleted or deactivated account is caught here, and the role is current.
+router.get(
+  '/me',
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    const [row] = await db
+      .select({
+        id: users.id,
+        email: users.email,
+        role: users.role,
+        isActive: users.isActive,
+        orgId: orgs.id,
+        orgName: orgs.name,
+      })
+      .from(users)
+      .innerJoin(orgs, eq(users.orgId, orgs.id))
+      .where(and(eq(users.id, req.user.id), eq(users.orgId, req.user.orgId)))
+      .limit(1);
+
+    if (!row || !row.isActive) {
+      const { maxAge, ...clearOptions } = cookieOptions;
+      res.clearCookie(COOKIE_NAME, clearOptions);
+      throw new AppError(401, 'UNAUTHORIZED', 'Account not found or disabled');
+    }
+
+    res.json({
+      user: { id: row.id, email: row.email, role: row.role, orgId: row.orgId },
+      org: { id: row.orgId, name: row.orgName },
+    });
+  })
+);
 
 export default router;
