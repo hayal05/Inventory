@@ -1,0 +1,9 @@
+.stock__panel {
+  padding: var(--space-5);
+}
+
+@media (max-width: 480px) {
+  .stock__panel {
+    padding: var(--space-4);
+  }
+}
