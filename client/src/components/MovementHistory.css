@@ -1,0 +1,39 @@
+.mh__toolbar {
+  padding: var(--space-4);
+}
+.mh__label {
+  display: block;
+  margin-bottom: var(--space-1);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+.mh__select {
+  padding: 8px var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+}
+.mh__when {
+  white-space: nowrap;
+}
+.mh__user {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+.mh__pager {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+.mh__error {
+  margin: 0;
+  padding: var(--space-4);
+  color: var(--down-text);
+}
