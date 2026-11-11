@@ -1,0 +1,21 @@
+.mvchart__placeholder {
+  height: 200px;
+  display: grid;
+  place-items: center;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+.mvchart__tooltip {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  font-size: var(--text-sm);
+}
+.mvchart__tooltip p {
+  margin: 0;
+}
+.mvchart__tooltip-title {
+  margin-bottom: var(--space-1) !important;
+  color: var(--text-muted);
+}
