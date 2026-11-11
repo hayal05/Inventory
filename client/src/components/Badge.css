@@ -1,0 +1,24 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+  background: var(--surface-2);
+  color: var(--text-muted);
+}
+.badge--up {
+  background: var(--up-bg);
+  color: var(--up-text);
+}
+.badge--down {
+  background: var(--down-bg);
+  color: var(--down-text);
+}
+.badge--warn {
+  background: var(--warn-bg);
+  color: var(--warn-text);
+}
