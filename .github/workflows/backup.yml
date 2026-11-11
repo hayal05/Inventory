@@ -1,0 +1,47 @@
+# Weekly Neon database backup. Configure BACKUP_DATABASE_URL as an Actions secret.
+# Backup artifacts contain customer data; keep access tightly restricted.
+name: weekly-db-backup
+on:
+  schedule:
+    - cron: "0 3 * * 0"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check backup secret
+        env:
+          BACKUP_DATABASE_URL: ${{ secrets.BACKUP_DATABASE_URL }}
+        run: |
+          test -n "$BACKUP_DATABASE_URL" || { echo "BACKUP_DATABASE_URL is missing"; exit 1; }
+      - name: Install PostgreSQL client
+        env:
+          PG_VERSION: ${{ vars.PG_VERSION || '17' }}
+        run: |
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -fsSL -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq "postgresql-client-${PG_VERSION}"
+          echo "/usr/lib/postgresql/${PG_VERSION}/bin" >> "$GITHUB_PATH"
+      - name: Dump database
+        env:
+          BACKUP_DATABASE_URL: ${{ secrets.BACKUP_DATABASE_URL }}
+        run: |
+          pg_dump "$BACKUP_DATABASE_URL" -Fc --no-owner --no-privileges -f "backup-$(date -u +%F).dump"
+      - name: Check archive
+        run: |
+          f=$(ls backup-*.dump)
+          pg_restore --list "$f" > contents.txt
+          for t in orgs users locations products batches stock_movements; do
+            grep -q "TABLE public $t " contents.txt || exit 1
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: db-backup
+          path: backup-*.dump
+          retention-days: 30
+          if-no-files-found: error
