@@ -1,0 +1,18 @@
+.sbl__batches {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.sbl__batches li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.sbl__error {
+  margin: 0;
+  padding: var(--space-4);
+  color: var(--down-text);
+}
