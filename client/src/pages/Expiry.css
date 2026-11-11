@@ -1,0 +1,13 @@
+.expiry__name {
+  font-weight: 600;
+}
+.expiry__batch {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+.expiry__error {
+  margin: 0;
+  padding: var(--space-4);
+  color: var(--down-text);
+}
