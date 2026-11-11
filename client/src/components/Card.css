@@ -1,0 +1,31 @@
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  min-width: 0;
+}
+.card--padded {
+  padding: var(--space-5);
+}
+.card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+.card__title {
+  margin: 0;
+  font-size: var(--text-lg);
+  font-weight: 600;
+}
+.card__subtitle {
+  margin: var(--space-1) 0 0;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+.card__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
