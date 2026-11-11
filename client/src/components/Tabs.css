@@ -1,0 +1,24 @@
+.tabs {
+  display: flex;
+  gap: var(--space-1);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+}
+.tabs__tab {
+  padding: var(--space-3) var(--space-4);
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.tabs__tab:hover {
+  color: var(--text);
+}
+.tabs__tab.is-active {
+  color: var(--text);
+  border-bottom-color: var(--accent-cyan);
+}
