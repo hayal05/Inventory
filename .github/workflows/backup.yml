@@ -1,23 +1,38 @@
-# Weekly Neon database backup. Configure BACKUP_DATABASE_URL as an Actions secret.
-# Backup artifacts contain customer data; keep access tightly restricted.
+# Weekly database backup (task 68).
+# Dumps the Neon database and keeps the file as a workflow artifact for 30 days.
+#
+# Setup (once, in GitHub: Settings > Secrets and variables > Actions):
+#   Secret   BACKUP_DATABASE_URL  Neon DIRECT connection string (not the -pooler one),
+#                                 ending in ?sslmode=require
+#   Variable PG_VERSION           (optional) Postgres major version of your Neon project,
+#                                 default 17. pg_dump must be the same version or newer.
+#
+# The artifact contains all customer data. Keep this repository PRIVATE.
 name: weekly-db-backup
+
 on:
   schedule:
-    - cron: "0 3 * * 0"
-  workflow_dispatch:
+    - cron: "0 3 * * 0" # Sundays 03:00 UTC
+  workflow_dispatch: # also lets you run it by hand from the Actions tab
+
 permissions:
   contents: read
+
 jobs:
   backup:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - name: Check backup secret
+      - name: Check the secret is set
         env:
           BACKUP_DATABASE_URL: ${{ secrets.BACKUP_DATABASE_URL }}
         run: |
-          test -n "$BACKUP_DATABASE_URL" || { echo "BACKUP_DATABASE_URL is missing"; exit 1; }
-      - name: Install PostgreSQL client
+          if [ -z "$BACKUP_DATABASE_URL" ]; then
+            echo "::error::Secret BACKUP_DATABASE_URL is not set (see the comments at the top of this file)."
+            exit 1
+          fi
+
+      - name: Install a matching pg_dump
         env:
           PG_VERSION: ${{ vars.PG_VERSION || '17' }}
         run: |
@@ -27,18 +42,27 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y -qq "postgresql-client-${PG_VERSION}"
           echo "/usr/lib/postgresql/${PG_VERSION}/bin" >> "$GITHUB_PATH"
-      - name: Dump database
+
+      - name: Dump the database
         env:
           BACKUP_DATABASE_URL: ${{ secrets.BACKUP_DATABASE_URL }}
         run: |
+          pg_dump --version
+          # Custom format (-Fc): compressed, restorable with pg_restore.
+          # --no-owner/--no-privileges so it restores into any database or role.
           pg_dump "$BACKUP_DATABASE_URL" -Fc --no-owner --no-privileges -f "backup-$(date -u +%F).dump"
-      - name: Check archive
+
+      - name: Check the dump is readable
         run: |
           f=$(ls backup-*.dump)
+          ls -l "$f"
+          # Fails if the file is not a valid archive; also confirm our tables are in it.
           pg_restore --list "$f" > contents.txt
           for t in orgs users locations products batches stock_movements; do
-            grep -q "TABLE public $t " contents.txt || exit 1
+            grep -q "TABLE public $t " contents.txt || { echo "::error::table $t missing from the dump"; exit 1; }
           done
+          echo "Dump contains all 6 tables."
+
       - uses: actions/upload-artifact@v4
         with:
           name: db-backup

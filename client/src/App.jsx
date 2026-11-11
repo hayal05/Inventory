@@ -13,6 +13,7 @@ import ProductDetail from './pages/ProductDetail.jsx';
 import Products from './pages/Products.jsx';
 import Stock from './pages/Stock.jsx';
 
+// Placeholder page until the real screen is built.
 function Placeholder({ title }) {
   return (
     <>
