@@ -15,11 +15,13 @@ jobs:
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          import gzip
-          for p in Path(".import").rglob("*.gz"):
-              target = Path(str(p)[len(".import/"):-3])
+          import gzip, lzma
+          for p in Path(".import").rglob("*"):
+              if not p.is_file() or p.suffix not in (".gz", ".xz"): continue
+              target = Path(str(p)[len(".import/"):-len(p.suffix)])
               target.parent.mkdir(parents=True, exist_ok=True)
-              target.write_bytes(gzip.decompress(p.read_bytes()))
+              decoder = gzip.decompress if p.suffix == ".gz" else lzma.decompress
+              target.write_bytes(decoder(p.read_bytes()))
               print("Restored", target)
           PY
       - name: Commit restored files
