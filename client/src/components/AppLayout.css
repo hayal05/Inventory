@@ -1,0 +1,28 @@
+.layout {
+  display: flex;
+  height: 100%;
+}
+.layout__main {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  padding: var(--space-6);
+}
+
+/* Phones: page on top, bottom bar underneath. 100dvh keeps the bar above the browser's own toolbar. */
+@media (max-width: 768px) {
+  .layout {
+    flex-direction: column;
+    height: 100%;
+    height: 100dvh;
+  }
+  .layout__main {
+    padding: var(--space-4);
+    padding-left: max(var(--space-4), env(safe-area-inset-left, 0px));
+    padding-right: max(var(--space-4), env(safe-area-inset-right, 0px));
+  }
+  .layout > .sidebar {
+    flex: none;
+    order: 2; /* after the page, so it sits at the bottom */
+  }
+}
