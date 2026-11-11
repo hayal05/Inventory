@@ -1,0 +1,31 @@
+.picks {
+  padding: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+}
+.picks__label {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+.picks__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.picks__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.picks__batch {
+  font-weight: 600;
+}
+.picks__qty {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
