@@ -1,0 +1,48 @@
+/* Design tokens and base styles. Dark theme only for the MVP (see docs/ui-guide.md). */
+:root {
+  --bg: #070d24;
+  --surface: #0b1433;
+  --surface-2: #0f1a40;
+  --border: #1b2a5a;
+  --text: #ffffff;
+  --text-muted: #9aa6c7;
+  --accent-cyan: #22c3ff;
+  --accent-magenta: #d63cff;
+  --up-bg: rgba(34, 197, 94, 0.15);
+  --up-text: #34d399;
+  --down-bg: rgba(239, 68, 68, 0.15);
+  --down-text: #f87171;
+  --warn-bg: rgba(245, 158, 11, 0.15);
+  --warn-text: #fbbf24;
+  --radius: 10px;
+  --radius-sm: 6px;
+  --radius-pill: 999px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --font: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --text-sm: 0.8125rem;
+  --text-base: 0.9375rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.5rem;
+  color-scheme: dark;
+}
+*, *::before, *::after { box-sizing: border-box; }
+html, body, #root { height: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--accent-cyan); }
+:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+}
